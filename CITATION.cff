@@ -3,7 +3,7 @@ message: 'If you use this research code, cite the named author and the eventual 
 title: 'RIFT: Reach-Invariant Firewall for Trust - Static Reference Kernel'
 authors:
   - family-names: Thor
-    given-names: Isaac Kong
-version: '0.1.0-dev'
+    given-names: Thor
+version: '0.1.1-dev'
 type: software
 repository-code: 'https://github.com/codethor0/rift'

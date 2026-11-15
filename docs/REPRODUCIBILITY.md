@@ -16,10 +16,10 @@ The test runner adds `src` to `PYTHONPATH` so tests still import the algorithm w
 
 ## Scope of existing bounded tests
 
-The supplied tests include 27 unittest cases and an independent DFS comparison over 512 states and 3,072 single-edge proposals in a **three-node, single-secret, unbounded static-graph subspace**. The script does not implement the separate review protocol's multilevel-label or H-bounded temporal search space.
+The supplied tests include 37 unittest cases, including an independent DFS comparison over 512 states and 3,072 single-edge proposals and a regression that refuses historical edge erasure in a **three-node, single-secret, unbounded static-graph subspace**. The script does not implement the separate review protocol's multilevel-label or H-bounded temporal search space.
 
 Report the exact Python version, Git commit SHA, test counts, environment, and failures when sharing results. Test success is not an unrestricted proof.
 
-## Agent review
+## Verification status
 
-Use the bootstrap script's `review` command to create local flat files in `private_review/`, which is ignored by Git. Send the algorithm alone for Phase A; send the tests and legacy comparisons after the independent findings are recorded.
+The earlier candidate exhibited a sequential false-ALLOW involving edge removal. This contained revision makes all edge-removal actions UNKNOWN and noncommitting. The revised tests passed in one development runtime, but independent reproduction and review are mandatory before any public release. Record the full Python version, code hash and test results for any external verification.

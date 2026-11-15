@@ -4,12 +4,14 @@ Run from this directory:
   python -m unittest -v test_rift_v3_static_candidate.py
 """
 import itertools
+import math
 import unittest
 from concurrent.futures import ThreadPoolExecutor
 
 from rift_v3_static_candidate import (
     Action, Contract, Decision, Edge, Fact, Monitor, Node, Policy,
     Sensitivity, State, certify, construct_candidate, forbidden_flows,
+    InvalidModel, UnsupportedModel,
 )
 
 
@@ -77,22 +79,19 @@ class CoreTests(unittest.TestCase):
         a = Action(0, "h1", add_holdings=(("agent", "f"),))
         self.assertEqual(certify(s, a, "admin").decision, Decision.DENY)
 
-    def test_revoking_read_edge_does_not_remove_taint(self):
+    def test_revoking_read_edge_requires_history_model(self):
         s = make_state(edges=(("vault", "agent"),), holders=("vault", "agent"))
         remove = Action(0, "r1", remove_edge_ids=("e0",))
         result = certify(s, remove, "admin")
-        self.assertEqual(result.decision, Decision.ALLOW)
-        self.assertIn("f", next(n for n in result.candidate.nodes if n.id == "agent").held_facts)
-        after = result.candidate
-        attempt = Action(1, "r2", add_edges=(Edge("z", "agent", "outside"),))
-        self.assertEqual(certify(after, attempt, "admin").decision, Decision.DENY)
+        self.assertEqual(result.decision, Decision.UNKNOWN)
+        self.assertEqual(s.version, 0)
 
-    def test_unrelated_revocation_preserves_other_edges(self):
+    def test_unrelated_revocation_requires_history_model(self):
         s = make_state(names=("vault", "agent", "outside", "a", "b"),
                        edges=(("vault", "agent"), ("a", "b")))
         a = Action(0, "r3", remove_edge_ids=("e1",),
                    add_edges=(Edge("x", "agent", "outside"),))
-        self.assertEqual(certify(s, a, "admin").decision, Decision.DENY)
+        self.assertEqual(certify(s, a, "admin").decision, Decision.UNKNOWN)
 
     def test_policy_change_recognition(self):
         s = make_state(edges=(("vault", "outside"),),
@@ -103,10 +102,12 @@ class CoreTests(unittest.TestCase):
         a = Action(0, "p1", replace_policy=restrictive)
         self.assertEqual(certify(s, a, "admin").decision, Decision.DENY)
 
-    def test_clean_state_remediation(self):
+    def test_dirty_state_cannot_be_cleaned_by_unproven_edge_removal(self):
         s = make_state(edges=(("vault", "outside"),))
         a = Action(0, "fix", remove_edge_ids=("e0",))
-        self.assertEqual(certify(s, a, "admin").decision, Decision.ALLOW)
+        self.assertEqual(certify(s, a, "admin").decision, Decision.UNKNOWN)
+        with self.assertRaises(InvalidModel):
+            Monitor(s)
 
     def test_contracts_are_distinct(self):
         s = make_state(edges=(("vault", "outside"),))
@@ -141,8 +142,8 @@ class CoreTests(unittest.TestCase):
         a = Action(0, "cy", add_edges=(Edge("x", "agent", "outside"),))
         self.assertEqual(certify(s, a, "admin").decision, Decision.DENY)
         remove = Action(0, "pa", remove_edge_ids=("e0",))
-        after = construct_candidate(s, remove)
-        self.assertEqual(len([e for e in after.edges if e.src == "vault" and e.dst == "agent"]), 1)
+        with self.assertRaises(UnsupportedModel):
+            construct_candidate(s, remove)
 
     def test_unmodeled_temporal_is_unknown(self):
         s = make_state()
@@ -213,6 +214,121 @@ class CoreTests(unittest.TestCase):
         s = make_state()
         a = Action(0, "mut", add_edges=[Edge("x", "vault", "outside")])
         self.assertEqual(certify(s, a, "admin").decision, Decision.DENY)
+
+    def test_no_historical_erasure_across_approved_actions(self):
+        m = Monitor(make_state())
+        a = Action(0, "step1", add_edges=(Edge("read", "vault", "agent"),))
+        self.assertEqual(m.submit(a, "admin").decision, Decision.ALLOW)
+        remove = Action(1, "step2", remove_edge_ids=("read",))
+        self.assertEqual(m.submit(remove, "admin").decision, Decision.UNKNOWN)
+        self.assertEqual(m.state.version, 1)
+        post = Action(1, "step3", add_edges=(Edge("post", "agent", "outside"),))
+        self.assertEqual(m.submit(post, "admin").decision, Decision.DENY)
+        self.assertEqual(m.state.version, 1)
+        batch = Action(1, "batch", remove_edge_ids=("read",),
+                       add_edges=(Edge("post", "agent", "outside"),))
+        self.assertEqual(m.submit(batch, "admin").decision, Decision.UNKNOWN)
+
+    def test_reject_container_subclass_with_hidden_holdings(self):
+        class UntrustworthySet(frozenset):
+            def __iter__(self):
+                return iter(())
+
+        s = make_state()
+        n = Node("vault", UntrustworthySet({"f"}))
+        evil = State((n, *s.nodes[1:]), s.edges, s.facts, s.policy)
+        self.assertEqual(certify(evil, Action(0, "hidden"), "admin").decision,
+                         Decision.DENY)
+
+    def test_reject_mutable_lookalike_objects(self):
+        class ForeignNode(Node):
+            pass
+
+        s = make_state()
+        evil = State((ForeignNode("vault", frozenset({"f"})), *s.nodes[1:]),
+                     s.edges, s.facts, s.policy)
+        self.assertEqual(certify(evil, Action(0, "lookalike"), "admin").decision,
+                         Decision.DENY)
+        self.assertEqual(certify(s, Action(0, "bad-list", add_nodes=[Node("x")]), "admin").decision,
+                         Decision.DENY)
+
+    def test_monitor_does_not_expose_storage_aliases(self):
+        s = make_state()
+        m = Monitor(s)
+        object.__setattr__(s.nodes[0], "held_facts", frozenset())
+        self.assertIn("f", m.state.nodes[0].held_facts)
+        exposed = m.state
+        object.__setattr__(exposed.nodes[0], "held_facts", frozenset())
+        self.assertIn("f", m.state.nodes[0].held_facts)
+        outcome = m.submit(Action(0, "alice", add_edges=(Edge("x", "vault", "agent"),)), "admin")
+        self.assertEqual(outcome.decision, Decision.ALLOW)
+        object.__setattr__(outcome.candidate.nodes[0], "held_facts", frozenset())
+        self.assertIn("f", m.state.nodes[0].held_facts)
+
+    def test_malformed_action_shapes_denied_without_exceptions(self):
+        s = make_state()
+        bads = (
+            Action(0, "x", add_holdings=("not-pair",)),
+            Action(0, "x", add_holdings=(("vault",),)),
+            Action(0, "x", add_nodes=(None,)),
+            Action(0, "x", add_edges=(object(),)),
+            Action(0, "x", remove_edge_ids=(1,)),
+            Action(0, "x", requires_temporal="no"),
+            Action(False, "x"),
+        )
+        for a in bads:
+            with self.subTest(action=repr(a)):
+                self.assertEqual(certify(s, a, "admin").decision, Decision.DENY)
+                self.assertEqual(Monitor(s).submit(a, "admin").decision, Decision.DENY)
+
+    def test_reject_float_and_nan_versions(self):
+        s = make_state()
+        for v in (float('nan'), 0.0, True):
+            p = Policy(s.policy.protected_sinks, s.policy.allowed_exceptions,
+                       s.policy.writers, s.policy.policy_admins,
+                       s.policy.min_protected, v)
+            bad = State(s.nodes, s.edges, s.facts, p)
+            self.assertEqual(certify(bad, Action(0, "v"), "admin").decision,
+                             Decision.DENY)
+            self.assertEqual(certify(s, Action(v, "a"), "admin").decision,
+                             Decision.DENY)
+        self.assertEqual(certify(s, Action(0, "p", replace_policy=Policy(
+            frozenset({"outside"}), version=math.nan)), "admin").decision,
+            Decision.DENY)
+
+    def test_reject_truthy_coverage_string(self):
+        s = make_state(coverage="False")
+        self.assertEqual(certify(s, Action(0, "coverage"), "admin").decision,
+                         Decision.DENY)
+
+    def test_fact_label_creation_requires_policy_admin(self):
+        s = make_state()
+        p = Policy(frozenset({"outside"}), writers=frozenset({"writer", "admin"}),
+                   policy_admins=frozenset({"admin"}))
+        s = State(s.nodes, s.edges, s.facts, p)
+        act = Action(0, "add-public", add_facts=(Fact("new", Sensitivity.PUBLIC),))
+        self.assertEqual(certify(s, act, "writer").decision, Decision.DENY)
+        self.assertEqual(certify(s, act, "admin").decision, Decision.ALLOW)
+        self.assertEqual(certify(s, Action(0, "edge", add_edges=(
+            Edge("x", "vault", "agent"),)), "writer").decision, Decision.ALLOW)
+
+    def test_unauthorized_principal_does_not_see_coverage_or_version(self):
+        s = make_state(version=4, coverage=False)
+        result = certify(s, Action(0, "unauth"), "outsider")
+        self.assertEqual(result.decision, Decision.DENY)
+        self.assertIn("not authorized", result.reason)
+
+    def test_long_chain_shortest_witness_and_no_quadratic_path_copies(self):
+        n = 1600
+        names = tuple(f"n{i}" for i in range(n))
+        edges = tuple(Edge(f"e{i}", names[i], names[i+1]) for i in range(n-1))
+        nodes = tuple(Node(name, frozenset({"f"}) if i == 0 else frozenset())
+                      for i, name in enumerate(names))
+        s = State(nodes, edges, (Fact("f", Sensitivity.SECRET),),
+                  Policy(frozenset({names[-1]})))
+        bad = forbidden_flows(s)
+        self.assertEqual(len(bad), 1)
+        self.assertEqual(len(next(iter(bad.values())).path), n)
 
     def test_independent_dfs_oracle_complete_small(self):
         names = ("A", "B", "C")
