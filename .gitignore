@@ -1,0 +1,35 @@
+# Local-only review materials and downloaded/source archives
+private_review/
+*.zip
+*.pdf
+*.docx
+*.har
+Pasted text*
+# Private environment, credentials, certificates and keys
+.env
+.env.*
+!.env.example
+*.pem
+*.p12
+*.pfx
+*.key
+*.asc
+id_rsa*
+id_ed25519*
+# Python/build/test byproducts
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage*
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+build/
+dist/
+*.egg-info/
+# OS and local logs
+.DS_Store
+*.log
+*.tmp
+.local/

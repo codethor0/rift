@@ -1,0 +1,9 @@
+cff-version: 1.2.0
+message: 'If you use this research code, cite the named author and the eventual public release.'
+title: 'RIFT: Reach-Invariant Firewall for Trust - Static Reference Kernel'
+authors:
+  - family-names: Thor
+    given-names: Isaac Kong
+version: '0.1.0-dev'
+type: software
+repository-code: 'https://github.com/codethor0/rift'
