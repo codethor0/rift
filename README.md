@@ -6,7 +6,7 @@
 **ORCID:** [0009-0001-6573-385X](https://orcid.org/0009-0001-6573-385X)
 **GitHub:** [codethor0/rift](https://github.com/codethor0/rift)
 **Research paper:** [Read the illustrated paper (PDF)](docs/paper/RIFT_Research_Paper.pdf)
-**Zenodo DOI:** Add after the record is published and verified.
+**Zenodo DOI:** [10.5281/zenodo.24239735](https://doi.org/10.5281/zenodo.24239735) (v0.1.1; all versions: [10.5281/zenodo.24239734](https://doi.org/10.5281/zenodo.24239734))
 
 <p align="center">
   <img src="docs/paper/RIFT_Sphere_Flow_Figure.png" width="640" alt="Black-and-white RIFT information-flow boundary illustration with an irregular network of nodes and curved paths surrounding a sphere." />
@@ -54,6 +54,26 @@ Hardened source baseline: [`763a41ff8588a545ee548b9c1562173cbc32aad5`](https://g
 
 RIFT is a bounded reference algorithm, not a deployed firewall or a claim to have invented information-flow control. The paper positions the kernel alongside earlier approaches, including Denning, Jif, Flow Caml, and LIO. Independent counterexamples and corrections are welcome. Please report a minimal runnable state, action, principal, expected decision, actual result, and source hash.
 
+## Citation
+
+If you use RIFT, please cite the archived software record:
+
+> Thor, T. (2026). *RIFT: Reach-Invariant Firewall for Trust - An Executable Static Kernel for Pre-Commit Information-Flow Certification* (Version 0.1.1) [Computer software]. Zenodo. https://doi.org/10.5281/zenodo.24239735
+
+```bibtex
+@software{thor_2026_rift,
+  author    = {Thor, Thor},
+  title     = {{RIFT: Reach-Invariant Firewall for Trust - An Executable Static Kernel for Pre-Commit Information-Flow Certification}},
+  year      = {2026},
+  version   = {0.1.1},
+  publisher = {Zenodo},
+  doi       = {10.5281/zenodo.24239735},
+  url       = {https://doi.org/10.5281/zenodo.24239735}
+}
+```
+
+Citation metadata is also provided in [CITATION.cff](CITATION.cff).
+
 ## License and attribution
 
-Open-source license proposed for this software release: **MIT**, subject to the author's final IP and release approval. The academic author is **Thor Thor**; signed Git commits use **codethor0**. Research developed independently on the author's own time, not sponsored by or representative of an employer.
+This software is released under the **MIT** license; see [LICENSE](LICENSE). The academic author is **Thor Thor**; signed Git commits use **codethor0**. Research developed independently on the author's own time, not sponsored by or representative of an employer.

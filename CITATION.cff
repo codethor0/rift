@@ -6,6 +6,15 @@ authors:
     given-names: Thor
     orcid: 'https://orcid.org/0009-0001-6573-385X'
 version: '0.1.1'
+doi: '10.5281/zenodo.24239735'
+date-released: '2026-11-14'
 type: software
 license: MIT
 repository-code: 'https://github.com/codethor0/rift'
+identifiers:
+  - type: doi
+    value: '10.5281/zenodo.24239735'
+    description: 'Zenodo record for version 0.1.1'
+  - type: doi
+    value: '10.5281/zenodo.24239734'
+    description: 'Zenodo concept DOI for all versions'
