@@ -1,33 +1,59 @@
 # RIFT: Reach-Invariant Firewall for Trust
 
-Research code and algorithm specification. Private working tree, awaiting independent regression review.
+**An Executable Static Kernel for Pre-Commit Information-Flow Certification**
 
-**Research author:** Thor Thor  
-**GitHub identity:** `codethor0`
+**Research author:** Thor Thor
+**ORCID:** [0009-0001-6573-385X](https://orcid.org/0009-0001-6573-385X)
+**GitHub:** [codethor0/rift](https://github.com/codethor0/rift)
+**Research paper:** [Read the illustrated paper (PDF)](docs/paper/RIFT_Research_Paper.pdf)
+**Zenodo DOI:** Add after the record is published and verified.
 
-## Scope
+<p align="center">
+  <img src="docs/paper/RIFT_Sphere_Flow_Figure.png" width="640" alt="Black-and-white RIFT information-flow boundary illustration with an irregular network of nodes and curved paths surrounding a sphere." />
+</p>
 
-The currently tested kernel models static, directed information-flow paths between nodes holding classified facts and protected destinations. It evaluates a complete candidate graph before admitting a modeled change. It is a research candidate, **not a production security control**. Edge deletion is not currently certifiable: the kernel returns `UNKNOWN` rather than erasing possible historical information flows.
+## Abstract
 
-The original RIFT v2.1 algorithm is retained separately for adversarial comparison. Its bounded-path incremental logic contains unresolved false-ALLOW defects and must not be used as an enforcement mechanism.
+RIFT provides an executable Python kernel for pre-commit certification over a finite, trusted, static information-flow graph. For a supported mutation, it constructs a candidate state and decides ALLOW, DENY, or UNKNOWN using reachability from actual protected holdings to forbidden sinks. A counterexample found during adversarial review showed that topology deletion can erase evidence of a possible earlier transfer. The hardened kernel contains this defect by refusing every edge removal: secure revocation and persistent taint are not implemented. The artifact includes source code, shortest-path witnesses, 37 regression tests, and an independent bounded DFS test oracle. These are model-relative results, not machine-checked verification or production enforcement.
 
-## Run
+## Execute the research artifact
 
-```sh
+Python 3.10+; no external Python dependencies.
+
+```bash
 ./run_tests.sh
 python3 src/rift_v3_static_candidate.py
+PYTHONPATH=src python3 examples/minimal_example.py
 ```
 
-## Research record
+The package includes **37 regression tests**, including a separately implemented bounded DFS oracle covering **512 finite static states** and **3,072 single-edge proposals**. The earlier baseline contained 27 tests, followed by ten hardening regressions. These results do not constitute formal verification or production security assurances.
 
-- `ALGORITHM.md`: normative scope and mathematical decision contract.
-- `src/rift_v3_static_candidate.py`: static reference implementation.
-- `tests/test_rift_v3_static_candidate.py`: tests and independent bounded DFS comparison.
-- `legacy/`: preserved v2.1 research baselines, explicitly not production code.
-- `docs/REPRODUCIBILITY.md`: execution and test boundaries.
-- `docs/AUDIT_STATUS.md`: open scientific and implementation issues.
-- `docs/RELEASE_GATE.md`: controls for later public code and DOI publication.
+## What is certified
 
-Private working materials are excluded from the research repository.
+For a trusted static graph, RIFT checks whether actual protected facts have a potential directed path to a forbidden sink in a fully constructed candidate state. The default **CLEAN** rule requires zero forbidden flows; **NO_NEW** is a weaker, separately identified contract. A supported local mutation receives `ALLOW`, `DENY`, or noncommitting `UNKNOWN`.
 
-No public release, license grant, Zenodo DOI, patent filing, or production claim is made by this private research snapshot. A license will be selected before any public open-source release.
+**Critical limitation:** Every edge removal returns `UNKNOWN`. This prevents the known historical-flow defect but means **revocation is structurally unsupported in this release**, not merely delayed. Persistent `may_hold_facts`, secure purge, declassification, and temporal enforcement have not been implemented.
+
+The accuracy of model-relative decisions also depends on trusted graph completeness, faithful fact holdings and sensitivity labels, authenticated writers, and mediation of real effects. Output witnesses can disclose protected paths to authorized writers; runtime integration requires its own access controls.
+
+## Research resources
+
+- [Research paper](docs/paper/RIFT_Research_Paper.pdf) | [LaTeX source](docs/paper/RIFT_Research_Paper.tex)
+- [Algorithm specification](ALGORITHM.md)
+- [Reproduction procedure](docs/REPRODUCIBILITY.md)
+- [Audit status and open obligations](docs/AUDIT_STATUS.md)
+- [Executable source](src/rift_v3_static_candidate.py)
+- [Test suite](tests/test_rift_v3_static_candidate.py)
+- [Executable example](examples/minimal_example.py)
+
+### Reproducibility anchor
+
+Hardened source baseline: [`763a41ff8588a545ee548b9c1562173cbc32aad5`](https://github.com/codethor0/rift/commit/763a41ff8588a545ee548b9c1562173cbc32aad5). The signed public release may include a later publication-only commit; verify its exact source archive against the deposited `SHA256SUMS.txt` manifest. The source and test SHA-256 values are stated in the paper.
+
+## Scope, prior art and scientific challenge
+
+RIFT is a bounded reference algorithm, not a deployed firewall or a claim to have invented information-flow control. The paper positions the kernel alongside earlier approaches, including Denning, Jif, Flow Caml, and LIO. Independent counterexamples and corrections are welcome. Please report a minimal runnable state, action, principal, expected decision, actual result, and source hash.
+
+## License and attribution
+
+Open-source license proposed for this software release: **MIT**, subject to the author's final IP and release approval. The academic author is **Thor Thor**; signed Git commits use **codethor0**. Research developed independently on the author's own time, not sponsored by or representative of an employer.

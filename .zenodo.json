@@ -1,0 +1,29 @@
+{
+  "title": "RIFT: Reach-Invariant Firewall for Trust - An Executable Static Kernel for Pre-Commit Information-Flow Certification",
+  "creators": [
+    {
+      "name": "Thor, Thor",
+      "affiliation": "Independent Open-Source Researcher, THOR-SEC",
+      "orcid": "0009-0001-6573-385X"
+    }
+  ],
+  "description": "A code-first information-flow reference algorithm with 37 bounded regression tests, a documented historical-flow counterexample, and explicit no-revocation/no-production claims. Includes an illustrated academic article, source code, reproducibility files and a checksum manifest.",
+  "keywords": [
+    "RIFT",
+    "information flow",
+    "graph reachability",
+    "security invariants",
+    "reference kernel",
+    "agent security",
+    "reproducible software"
+  ],
+  "license": "MIT",
+  "version": "0.1.1",
+  "related_identifiers": [
+    {
+      "identifier": "https://github.com/codethor0/rift",
+      "relation": "isSupplementedBy",
+      "scheme": "url"
+    }
+  ]
+}

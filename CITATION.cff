@@ -1,9 +1,11 @@
 cff-version: 1.2.0
-message: 'If you use this research code, cite the named author and the eventual public release.'
-title: 'RIFT: Reach-Invariant Firewall for Trust - Static Reference Kernel'
+message: 'Please cite this RIFT research software and the corresponding Zenodo software record.'
+title: 'RIFT: Reach-Invariant Firewall for Trust - An Executable Static Kernel for Pre-Commit Information-Flow Certification'
 authors:
   - family-names: Thor
     given-names: Thor
-version: '0.1.1-dev'
+    orcid: 'https://orcid.org/0009-0001-6573-385X'
+version: '0.1.1'
 type: software
+license: MIT
 repository-code: 'https://github.com/codethor0/rift'
