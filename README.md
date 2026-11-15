@@ -77,3 +77,7 @@ Citation metadata is also provided in [CITATION.cff](CITATION.cff).
 ## License and attribution
 
 This software is released under the **MIT** license; see [LICENSE](LICENSE). The academic author is **Thor Thor**; signed Git commits use **codethor0**. Research developed independently on the author's own time, not sponsored by or representative of an employer.
+
+## Support
+
+If RIFT is useful to your work, you can support continued independent research through [GitHub Sponsors](https://github.com/sponsors/codethor0).
