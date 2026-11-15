@@ -48,7 +48,7 @@ The accuracy of model-relative decisions also depends on trusted graph completen
 
 ### Reproducibility anchor
 
-Hardened source baseline: [`763a41ff8588a545ee548b9c1562173cbc32aad5`](https://github.com/codethor0/rift/commit/763a41ff8588a545ee548b9c1562173cbc32aad5). The signed public release may include a later publication-only commit; verify its exact source archive against the deposited `SHA256SUMS.txt` manifest. The source and test SHA-256 values are stated in the paper.
+Hardened source baseline: [`763a41ff8588a545ee548b9c1562173cbc32aad5`](https://github.com/codethor0/rift/commit/763a41ff8588a545ee548b9c1562173cbc32aad5). Release tag [`v0.1.1`](https://github.com/codethor0/rift/releases/tag/v0.1.1) points to signed commit `74c80299b8cab43c215095c359c147a263789f04`, which adds publication files to that baseline without changing the kernel source or tests. Verify the archived source ZIP against the deposited `SHA256SUMS.txt` manifest. The source and test SHA-256 values are stated in the paper.
 
 ## Scope, prior art and scientific challenge
 

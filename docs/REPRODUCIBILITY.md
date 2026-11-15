@@ -9,6 +9,7 @@ Python 3.10 or newer. No third-party Python packages required for the initial te
 ```sh
 ./run_tests.sh
 python3 src/rift_v3_static_candidate.py
+PYTHONPATH=src python3 examples/minimal_example.py  # prints ALLOW, DENY, UNKNOWN
 python3 legacy/reproduce_horizon_false_allow.py  # demonstrates known legacy failure
 ```
 
@@ -22,4 +23,4 @@ Report the exact Python version, Git commit SHA, test counts, environment, and f
 
 ## Verification status
 
-The earlier candidate exhibited a sequential false-ALLOW involving edge removal. This contained revision makes all edge-removal actions UNKNOWN and noncommitting. The revised tests passed in one development runtime, but independent reproduction and review are mandatory before any public release. Record the full Python version, code hash and test results for any external verification.
+The earlier candidate exhibited a sequential false-ALLOW involving edge removal. This contained revision makes all edge-removal actions UNKNOWN and noncommitting. The revised tests passed before the v0.1.1 release; independent reproduction and review by others are invited. Record the full Python version, code hash and test results for any external verification.
